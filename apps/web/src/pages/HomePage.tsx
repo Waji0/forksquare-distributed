@@ -1,14 +1,42 @@
-import { ArrowRight, Search, ShieldCheck, Sparkles, Timer } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { ArrowRight, Loader2, Search, ShieldCheck, Sparkles, Timer } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import Input from '../components/ui/Input';
 import RestaurantCard from '../components/restaurant/RestaurantCard';
-import { categories, restaurants } from '../data/mock';
+import { fetchRestaurants, type Restaurant } from '../lib/api';
+
+const categories = [
+  { id: 'all', label: 'All', emoji: '🍽️' },
+  { id: 'bbq', label: 'BBQ', emoji: '🍢' },
+  { id: 'pizza', label: 'Pizza', emoji: '🍕' },
+  { id: 'healthy', label: 'Healthy', emoji: '🥗' },
+  { id: 'dessert', label: 'Dessert', emoji: '🍰' },
+  { id: 'traditional', label: 'Traditional', emoji: '🍛' },
+];
 
 export default function HomePage() {
-  const featured = restaurants.filter((restaurant) => restaurant.featured);
+  const [featured, setFeatured] = useState<Restaurant[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadFeatured() {
+      try {
+        const response = await fetchRestaurants({ limit: 6 });
+        const featuredItems = response.data.restaurants.filter((r) => r.featured);
+        setFeatured(featuredItems.length > 0 ? featuredItems : response.data.restaurants.slice(0, 3));
+      } catch {
+        // Silently fail - UI still works with empty state
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadFeatured();
+  }, []);
 
   return (
     <div className="space-y-10">
+      {/* Hero Section */}
       <section className="grid gap-6 rounded-3xl bg-slate-900 p-8 text-white lg:grid-cols-[1.2fr_0.8fr] lg:items-center">
         <div>
           <p className="mb-3 inline-flex rounded-full bg-orange-500/10 px-3 py-1 text-xs font-semibold text-orange-300 ring-1 ring-orange-500/20">
@@ -76,6 +104,7 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* Categories */}
       <section>
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-xl font-bold text-slate-900">Categories</h2>
@@ -103,6 +132,7 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* Featured Restaurants */}
       <section>
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-xl font-bold text-slate-900">Featured restaurants</h2>
@@ -114,11 +144,32 @@ export default function HomePage() {
           </Link>
         </div>
 
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-          {featured.map((restaurant) => (
-            <RestaurantCard key={restaurant.id} restaurant={restaurant} />
-          ))}
-        </div>
+        {loading ? (
+          <div className="flex h-64 items-center justify-center">
+            <Loader2 className="h-8 w-8 animate-spin text-orange-600" />
+          </div>
+        ) : (
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+            {featured.map((restaurant) => (
+              <RestaurantCard
+                key={restaurant._id}
+                restaurant={{
+                  id: restaurant._id,
+                  name: restaurant.name,
+                  cuisine: restaurant.cuisine,
+                  category: restaurant.category as never,
+                  rating: restaurant.rating,
+                  deliveryTime: restaurant.deliveryTime,
+                  deliveryFee: restaurant.deliveryFee,
+                  tags: restaurant.tags,
+                  gradient: restaurant.gradient,
+                  emoji: restaurant.emoji,
+                  featured: restaurant.featured,
+                }}
+              />
+            ))}
+          </div>
+        )}
       </section>
     </div>
   );

@@ -4,35 +4,38 @@ import mongoose from 'mongoose';
 import 'dotenv/config';
 import { connectMongo, connectPostgres, redisClient, pgPool } from './config/db';
 import { initPostgresTables } from './config/initPostgres';
+import { errorHandler } from './middlewares/errorHandler';
+import routes from './routes';
 
 const app = express();
 
 app.use(cors());
 app.use(express.json());
 
-// Advanced Health Check Endpoint
+// ==========================================
+// Health Check Endpoint
+// ==========================================
 app.get('/api/health', async (_req, res) => {
   let pgStatus = 'down';
   let mongoStatus = 'down';
   let redisStatus = 'down';
 
-  // 1. Check Postgres
   try {
     const client = await pgPool.connect();
     await client.query('SELECT 1');
     client.release();
     pgStatus = 'up';
-  } catch (e) { /* ignore */ }
+  } catch {
+    pgStatus = 'down';
+  }
 
-  // 2. Check Mongo
-  try {
-    if (mongoose.connection.readyState === 1) mongoStatus = 'up';
-  } catch (e) { /* ignore */ }
+  if (mongoose.connection.readyState === 1) {
+    mongoStatus = 'up';
+  }
 
-  // 3. Check Redis
-  try {
-    if (redisClient.status === 'ready') redisStatus = 'up';
-  } catch (e) { /* ignore */ }
+  if (redisClient.status === 'ready') {
+    redisStatus = 'up';
+  }
 
   res.json({
     status: 'ok',
@@ -42,26 +45,51 @@ app.get('/api/health', async (_req, res) => {
       postgres_orders: pgStatus,
       mongo_menus: mongoStatus,
       redis_cache: redisStatus,
-    }
+    },
   });
 });
 
+// ==========================================
+// API Routes
+// ==========================================
+app.use('/api', routes);
+
+// ==========================================
+// Error Handler (must be last)
+// ==========================================
+app.use(errorHandler);
+
+// ==========================================
+// Start Server
+// ==========================================
 const port = Number(process.env.PORT ?? 4000);
 
 async function startServer() {
-  // Connect to all databases
   await connectMongo();
   await connectPostgres();
   await initPostgresTables();
-  
-  // Wait for Redis to be ready
+
   await new Promise<void>((resolve) => {
-    if (redisClient.status === 'ready') resolve();
-    else redisClient.on('ready', () => resolve());
+    if (redisClient.status === 'ready') {
+      resolve();
+    } else {
+      redisClient.on('ready', () => resolve());
+    }
   });
 
   app.listen(port, () => {
-    console.log(`🚀 ForkSquare API is running on http://localhost:${port}`);
+    console.log(`🚀 ForkSquare API running on http://localhost:${port}`);
+    console.log(`📡 API Routes:`);
+    console.log(`   GET  /api/health`);
+    console.log(`   POST /api/auth/register`);
+    console.log(`   POST /api/auth/login`);
+    console.log(`   GET  /api/auth/check-username`);
+    console.log(`   GET  /api/restaurants`);
+    console.log(`   GET  /api/restaurants/:id`);
+    console.log(`   POST /api/restaurants`);
+    console.log(`   POST /api/orders`);
+    console.log(`   GET  /api/orders`);
+    console.log(`   GET  /api/orders/:id`);
   });
 }
 

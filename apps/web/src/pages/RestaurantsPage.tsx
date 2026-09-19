@@ -1,30 +1,66 @@
-import { useMemo, useState } from 'react';
-import { Search } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
+import { Loader2, Search } from 'lucide-react';
 import Input from '../components/ui/Input';
 import RestaurantCard from '../components/restaurant/RestaurantCard';
-import { categories, restaurants, type CategoryId } from '../data/mock';
+import { fetchRestaurants, type Restaurant, type RestaurantParams } from '../lib/api';
 import { cn } from '../lib/utils';
+
+const categories = [
+  { id: 'all', label: 'All', emoji: '🍽️' },
+  { id: 'bbq', label: 'BBQ', emoji: '🍢' },
+  { id: 'pizza', label: 'Pizza', emoji: '🍕' },
+  { id: 'healthy', label: 'Healthy', emoji: '🥗' },
+  { id: 'dessert', label: 'Dessert', emoji: '🍰' },
+  { id: 'traditional', label: 'Traditional', emoji: '🍛' },
+];
 
 export default function RestaurantsPage() {
   const [query, setQuery] = useState('');
-  const [activeCategory, setActiveCategory] = useState<CategoryId>('all');
+  const [activeCategory, setActiveCategory] = useState('all');
+  const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const filteredRestaurants = useMemo(() => {
-    const normalizedQuery = query.trim().toLowerCase();
+  // Fetch restaurants from API
+  useEffect(() => {
+    const controller = new AbortController();
 
-    return restaurants.filter((restaurant) => {
-      const matchesCategory =
-        activeCategory === 'all' || restaurant.category === activeCategory;
+    async function loadRestaurants() {
+      setLoading(true);
+      setError(null);
 
-      const matchesQuery =
-        normalizedQuery.length === 0 ||
-        restaurant.name.toLowerCase().includes(normalizedQuery) ||
-        restaurant.cuisine.toLowerCase().includes(normalizedQuery) ||
-        restaurant.tags.some((tag) => tag.toLowerCase().includes(normalizedQuery));
+      try {
+        const params: RestaurantParams = {};
 
-      return matchesCategory && matchesQuery;
-    });
+        if (query.trim()) {
+          params.search = query.trim();
+        }
+
+        if (activeCategory !== 'all') {
+          params.category = activeCategory;
+        }
+
+        const response = await fetchRestaurants(params);
+        setRestaurants(response.data.restaurants);
+      } catch {
+        setError('Failed to load restaurants. Make sure the API server is running.');
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    // Debounce search
+    const timeout = setTimeout(() => {
+      loadRestaurants();
+    }, 300);
+
+    return () => {
+      clearTimeout(timeout);
+      controller.abort();
+    };
   }, [query, activeCategory]);
+
+  const resultCount = useMemo(() => restaurants.length, [restaurants]);
 
   return (
     <div className="space-y-6">
@@ -32,7 +68,9 @@ export default function RestaurantsPage() {
         <div>
           <h1 className="text-2xl font-bold text-slate-900">Restaurants</h1>
           <p className="text-slate-500">
-            Search and filter restaurants by category, name, or cuisine.
+            {loading
+              ? 'Loading restaurants...'
+              : `${resultCount} restaurant${resultCount !== 1 ? 's' : ''} found`}
           </p>
         </div>
 
@@ -65,7 +103,16 @@ export default function RestaurantsPage() {
         ))}
       </div>
 
-      {filteredRestaurants.length === 0 ? (
+      {loading ? (
+        <div className="flex min-h-[300px] items-center justify-center">
+          <Loader2 className="h-8 w-8 animate-spin text-orange-600" />
+        </div>
+      ) : error ? (
+        <div className="rounded-3xl border border-red-200 bg-red-50 p-10 text-center">
+          <p className="text-lg font-semibold text-red-800">Error</p>
+          <p className="mt-1 text-red-600">{error}</p>
+        </div>
+      ) : restaurants.length === 0 ? (
         <div className="rounded-3xl border border-dashed border-slate-300 bg-white p-10 text-center">
           <p className="text-lg font-semibold text-slate-900">No restaurants found</p>
           <p className="mt-1 text-slate-500">
@@ -74,8 +121,23 @@ export default function RestaurantsPage() {
         </div>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-          {filteredRestaurants.map((restaurant) => (
-            <RestaurantCard key={restaurant.id} restaurant={restaurant} />
+          {restaurants.map((restaurant) => (
+            <RestaurantCard
+              key={restaurant._id}
+              restaurant={{
+                id: restaurant._id,
+                name: restaurant.name,
+                cuisine: restaurant.cuisine,
+                category: restaurant.category as never,
+                rating: restaurant.rating,
+                deliveryTime: restaurant.deliveryTime,
+                deliveryFee: restaurant.deliveryFee,
+                tags: restaurant.tags,
+                gradient: restaurant.gradient,
+                emoji: restaurant.emoji,
+                featured: restaurant.featured,
+              }}
+            />
           ))}
         </div>
       )}
