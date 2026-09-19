@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  # 1. PostgreSQL: For strict ACID transactions (Orders, Inventory, Users)
+  postgres:
+    image: postgres:16-alpine
+    container_name: forksquare_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: forksquare
+      POSTGRES_PASSWORD: forksquare_secret
+      POSTGRES_DB: forksquare_orders
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  # 2. MongoDB: For flexible, high-volume document storage (Menus, Restaurants)
+  mongo:
+    image: mongo:7
+    container_name: forksquare_mongo
+    restart: always
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+  # 3. Redis: For caching, distributed locks, and bloom filters
+  redis:
+    image: redis:7-alpine
+    container_name: forksquare_redis
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+volumes:
+  postgres_data:
+  mongo_data:
+  redis_data:
