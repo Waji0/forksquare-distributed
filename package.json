@@ -1,0 +1,13 @@
+{
+  "name": "forksquare-distributed",
+  "private": true,
+  "workspaces": [
+    "apps/*"
+  ],
+  "scripts": {
+    "dev:web": "npm run dev -w @forksquare/web",
+    "dev:api": "npm run dev -w @forksquare/api",
+    "build": "npm run build -w @forksquare/api && npm run build -w @forksquare/web",
+    "typecheck": "npm run typecheck -w @forksquare/api && npm run typecheck -w @forksquare/web"
+  }
+}
