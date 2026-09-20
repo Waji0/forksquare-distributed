@@ -37,6 +37,7 @@ export interface RestaurantListResponse {
     restaurants: Restaurant[];
     pagination: PaginationResponse;
   };
+  source?: 'cache' | 'database';
 }
 
 export interface RestaurantParams {
@@ -48,8 +49,38 @@ export interface RestaurantParams {
   limit?: number;
 }
 
+export interface UsernameCheckResponse {
+  success: boolean;
+  data: {
+    username: string;
+    exists: boolean;
+    lookupMethod: string;
+    responseTimeMs: number;
+  };
+}
+
+export interface SystemStatsResponse {
+  success: boolean;
+  data: {
+    cache: {
+      hits: number;
+      misses: number;
+      hitRatio: string;
+    };
+    bloomFilter: {
+      bitSize: number;
+      numHashes: number;
+      bitsSet: number;
+      fillRatio: number;
+    };
+    redis: {
+      memoryUsage: string;
+    };
+  };
+}
+
 // ==========================================
-// API Functions
+// Restaurant API
 // ==========================================
 export async function fetchRestaurants(
   params?: RestaurantParams
@@ -65,12 +96,14 @@ export async function fetchRestaurantById(id: string): Promise<Restaurant> {
   return response.data.data;
 }
 
-export async function checkUsername(username: string): Promise<boolean> {
-  const response = await api.get<{
-    success: boolean;
-    data: { exists: boolean };
-  }>('/auth/check-username', { params: { username } });
-  return response.data.data.exists;
+// ==========================================
+// Auth API
+// ==========================================
+export async function checkUsername(username: string): Promise<UsernameCheckResponse> {
+  const response = await api.get<UsernameCheckResponse>('/auth/check-username', {
+    params: { username },
+  });
+  return response.data;
 }
 
 export interface RegisterPayload {
@@ -101,6 +134,14 @@ export async function loginUser(payload: {
   password: string;
 }): Promise<AuthResponse> {
   const response = await api.post<AuthResponse>('/auth/login', payload);
+  return response.data;
+}
+
+// ==========================================
+// System API
+// ==========================================
+export async function fetchSystemStats(): Promise<SystemStatsResponse> {
+  const response = await api.get<SystemStatsResponse>('/system/stats');
   return response.data;
 }
 

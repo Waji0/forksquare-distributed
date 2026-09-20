@@ -2,6 +2,8 @@ import mongoose from 'mongoose';
 import { Pool } from 'pg';
 import 'dotenv/config';
 import { Restaurant } from '../models/Restaurant';
+import { bloomAddBulk } from '../services/bloomFilter';
+import { redisClient } from '../config/db';
 
 const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/forksquare_menus';
 const DATABASE_URL =
@@ -151,6 +153,13 @@ const inventorySeedData = [
 ];
 
 // ==========================================
+// Seed Users for Bloom Filter
+// ==========================================
+const seedUsernames = [
+  'admin', 'testuser', 'foodlover', 'karachieats', 'pizzafan',
+];
+
+// ==========================================
 // Seed Function
 // ==========================================
 async function seed() {
@@ -191,7 +200,6 @@ async function seed() {
     }
 
     console.log(`📦 Inserted ${inventorySeedData.length} inventory items into PostgreSQL\n`);
-
     client.release();
   } catch (error) {
     console.error('❌ PostgreSQL seed error:', error);
@@ -200,8 +208,17 @@ async function seed() {
     await pgPool.end();
   }
 
-  // 3. Cleanup
+  // 3. Populate Bloom Filter with existing usernames
+  try {
+    await bloomAddBulk(seedUsernames);
+    console.log(`🌸 Bloom Filter populated with ${seedUsernames.length} usernames\n`);
+  } catch (error) {
+    console.error('❌ Bloom filter seed error:', error);
+  }
+
+  // 4. Cleanup
   await mongoose.disconnect();
+  await redisClient.quit();
 
   console.log('🎉 Database seeding completed successfully!');
   process.exit(0);

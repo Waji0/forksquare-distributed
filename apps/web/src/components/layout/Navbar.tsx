@@ -35,10 +35,10 @@ export default function Navbar() {
               end={item.end}
               className={({ isActive }) =>
                 cn(
-                  'rounded-xl px-4 py-2 text-sm font-semibold transition-colors',
+                  "rounded-xl px-4 py-2 text-sm font-semibold transition-colors",
                   isActive
-                    ? 'bg-orange-50 text-orange-700'
-                    : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+                    ? "bg-orange-50 text-orange-700"
+                    : "text-slate-600 hover:bg-slate-100 hover:text-slate-900",
                 )
               }
             >
@@ -66,13 +66,22 @@ export default function Navbar() {
             </span>
           </Link>
 
-          <Link
-            to="/login"
-            className="inline-flex h-11 items-center justify-center rounded-xl bg-slate-900 px-4 text-sm font-semibold text-white transition-colors hover:bg-slate-800"
-          >
-            <User className="mr-2 h-4 w-4" />
-            Sign in
-          </Link>
+          <div className="flex items-center gap-2">
+            <Link
+              to="/register"
+              className="inline-flex h-11 items-center justify-center rounded-xl border border-slate-300 px-4 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-100"
+            >
+              Register
+            </Link>
+            <Link
+              to="/login"
+              className="inline-flex h-11 items-center justify-center rounded-xl bg-slate-900 px-4 text-sm font-semibold text-white transition-colors hover:bg-slate-800"
+            >
+              <User className="mr-2 h-4 w-4" />
+              Sign in
+            </Link>
+          </div>
+          
         </div>
       </div>
     </header>

@@ -79,17 +79,20 @@ async function startServer() {
 
   app.listen(port, () => {
     console.log(`🚀 ForkSquare API running on http://localhost:${port}`);
-    console.log(`📡 API Routes:`);
-    console.log(`   GET  /api/health`);
-    console.log(`   POST /api/auth/register`);
-    console.log(`   POST /api/auth/login`);
-    console.log(`   GET  /api/auth/check-username`);
-    console.log(`   GET  /api/restaurants`);
-    console.log(`   GET  /api/restaurants/:id`);
-    console.log(`   POST /api/restaurants`);
-    console.log(`   POST /api/orders`);
-    console.log(`   GET  /api/orders`);
-    console.log(`   GET  /api/orders/:id`);
+    console.log('');
+    console.log('📡 API Routes:');
+    console.log('   GET  /api/health');
+    console.log('   POST /api/auth/register');
+    console.log('   POST /api/auth/login');
+    console.log('   GET  /api/auth/check-username');
+    console.log('   GET  /api/restaurants');
+    console.log('   GET  /api/restaurants/:id');
+    console.log('   POST /api/restaurants');
+    console.log('   POST /api/orders');
+    console.log('   GET  /api/orders');
+    console.log('   GET  /api/orders/:id');
+    console.log('   GET  /api/system/stats');
+    console.log('   POST /api/system/stats/reset');
   });
 }
 
