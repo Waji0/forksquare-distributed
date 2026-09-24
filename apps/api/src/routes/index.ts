@@ -4,6 +4,7 @@ import restaurantRoutes from './restaurant.routes';
 import orderRoutes from './order.routes';
 import systemRoutes from './system.routes';
 import flashSaleRoutes from './flashSale.routes';
+import eventRoutes from './event.routes';
 
 const router = Router();
 
@@ -12,5 +13,6 @@ router.use('/restaurants', restaurantRoutes);
 router.use('/orders', orderRoutes);
 router.use('/system', systemRoutes);
 router.use('/flash-sale', flashSaleRoutes);
+router.use('/events', eventRoutes);
 
 export default router;

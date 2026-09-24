@@ -8,6 +8,7 @@ import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import NotFoundPage from './pages/NotFoundPage';
 import FlashSalePage from './pages/FlashSalePage';
+import ActivityPage from './pages/ActivityPage';
 
 export default function App() {
   return (
@@ -21,6 +22,7 @@ export default function App() {
         <Route path="/register" element={<RegisterPage />} />
         <Route path="*" element={<NotFoundPage />} />
         <Route path="/flash-sale" element={<FlashSalePage />} />
+        <Route path="/activity" element={<ActivityPage />} />
       </Route>
     </Routes>
   );

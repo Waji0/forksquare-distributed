@@ -7,6 +7,9 @@ import { initPostgresTables } from './config/initPostgres';
 import { errorHandler } from './middlewares/errorHandler';
 import routes from './routes';
 
+import { connectKafka, disconnectKafka } from './config/kafka';
+import { startConsumers } from './workers/eventConsumers';
+
 const app = express();
 
 app.use(cors());
@@ -69,30 +72,38 @@ async function startServer() {
   await connectPostgres();
   await initPostgresTables();
 
+  // Wait for Redis
   await new Promise<void>((resolve) => {
-    if (redisClient.status === 'ready') {
-      resolve();
-    } else {
-      redisClient.on('ready', () => resolve());
-    }
+    if (redisClient.status === "ready") resolve();
+    else redisClient.on("ready", () => resolve());
   });
+
+  // Connect Kafka & Start Background Workers
+  await connectKafka();
+  await startConsumers();
 
   app.listen(port, () => {
     console.log(`🚀 ForkSquare API running on http://localhost:${port}`);
-    console.log('');
-    console.log('📡 API Routes:');
-    console.log('   GET  /api/health');
-    console.log('   POST /api/auth/register');
-    console.log('   POST /api/auth/login');
-    console.log('   GET  /api/auth/check-username');
-    console.log('   GET  /api/restaurants');
-    console.log('   GET  /api/restaurants/:id');
-    console.log('   POST /api/restaurants');
-    console.log('   POST /api/orders');
-    console.log('   GET  /api/orders');
-    console.log('   GET  /api/orders/:id');
-    console.log('   GET  /api/system/stats');
-    console.log('   POST /api/system/stats/reset');
+    console.log("");
+    console.log("📡 API Routes:");
+    console.log("   GET  /api/health");
+    console.log("   POST /api/auth/register");
+    console.log("   POST /api/auth/login");
+    console.log("   GET  /api/auth/check-username");
+    console.log("   GET  /api/restaurants");
+    console.log("   GET  /api/restaurants/:id");
+    console.log("   POST /api/restaurants");
+    console.log("   POST /api/orders");
+    console.log("   GET  /api/orders");
+    console.log("   GET  /api/orders/:id");
+    console.log("   GET  /api/system/stats");
+    console.log("   POST /api/system/stats/reset");
+  });
+
+  // Graceful shutdown
+  process.on("SIGTERM", async () => {
+    await disconnectKafka();
+    process.exit(0);
   });
 }
 
