@@ -150,6 +150,7 @@ const inventorySeedData = [
   { item_id: 'item_traditional_1', quantity: 90 },
   { item_id: 'item_traditional_2', quantity: 75 },
   { item_id: 'item_fast_1', quantity: 5 },
+  { item_id: 'flash_burger_gold', quantity: 1 },
 ];
 
 // ==========================================

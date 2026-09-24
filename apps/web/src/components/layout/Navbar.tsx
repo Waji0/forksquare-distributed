@@ -12,6 +12,7 @@ const navItems: NavItem[] = [
   { to: '/', label: 'Home', end: true },
   { to: '/restaurants', label: 'Restaurants' },
   { to: '/orders', label: 'Orders' },
+  { to: '/flash-sale', label: '⚡ Flash Sale' },
 ];
 
 export default function Navbar() {
