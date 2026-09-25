@@ -13,6 +13,7 @@ const navItems: NavItem[] = [
   { to: '/restaurants', label: 'Restaurants' },
   { to: '/orders', label: 'Orders' },
   { to: '/flash-sale', label: '⚡ Flash Sale' },
+  { to: '/similar-search', label: '🧠 AI Search' },
   { to: '/activity', label: '📡 Activity' },
 ];
 

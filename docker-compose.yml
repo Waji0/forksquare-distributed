@@ -1,8 +1,9 @@
 version: '3.8'
 
 services:
+  # UPDATED: Use pgvector image for vector similarity search
   postgres:
-    image: postgres:16-alpine
+    image: pgvector/pgvector:pg16
     container_name: forksquare_postgres
     restart: always
     environment:
@@ -32,7 +33,6 @@ services:
     volumes:
       - redis_data:/data
 
-  # NEW: Redpanda (Kafka-compatible Message Broker)
   redpanda:
     image: redpandadata/redpanda:v23.3.11
     container_name: forksquare_redpanda

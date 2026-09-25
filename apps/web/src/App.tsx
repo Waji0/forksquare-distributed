@@ -6,9 +6,10 @@ import OrdersPage from './pages/OrdersPage';
 import CartPage from './pages/CartPage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
-import NotFoundPage from './pages/NotFoundPage';
 import FlashSalePage from './pages/FlashSalePage';
 import ActivityPage from './pages/ActivityPage';
+import SimilarSearchPage from './pages/SimilarSearchPage';
+import NotFoundPage from './pages/NotFoundPage';
 
 export default function App() {
   return (
@@ -20,9 +21,10 @@ export default function App() {
         <Route path="/cart" element={<CartPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
-        <Route path="*" element={<NotFoundPage />} />
         <Route path="/flash-sale" element={<FlashSalePage />} />
         <Route path="/activity" element={<ActivityPage />} />
+        <Route path="/similar-search" element={<SimilarSearchPage />} />
+        <Route path="*" element={<NotFoundPage />} />
       </Route>
     </Routes>
   );
