@@ -14,6 +14,8 @@ const navItems: NavItem[] = [
   { to: '/orders', label: 'Orders' },
   { to: '/flash-sale', label: '⚡ Flash Sale' },
   { to: '/similar-search', label: '🧠 AI Search' },
+  { to: '/analytics', label: '📊 Analytics' },
+  { to: '/graph', label: '🔗 Graph' },
   { to: '/activity', label: '📡 Activity' },
 ];
 

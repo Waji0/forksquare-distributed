@@ -1,55 +1,56 @@
 import { notificationConsumer, analyticsConsumer, TOPICS } from '../config/kafka';
 import { pgPool } from '../config/db';
+import { insertAnalyticsEvent } from '../services/analytics';
 import { OrderEvent } from '../services/eventPublisher';
-
-/**
- * Background Workers (Consumers)
- * 
- * These run asynchronously. The main API doesn't wait for them to finish.
- * Course Mapping: Module 2 - Asynchronous Replication & Eventual Consistency
- */
 
 export async function startConsumers() {
   // 1. Notification Service Consumer
   await notificationConsumer.subscribe({ topic: TOPICS.ORDERS, fromBeginning: false });
-  
+
   await notificationConsumer.run({
     eachMessage: async ({ message }) => {
       const event: OrderEvent = JSON.parse(message.value?.toString() || '{}');
-      
-      // Simulate sending an email/SMS (takes time)
+
       console.log(`📧 [Notification Worker] Processing ${event.eventType}...`);
-      await new Promise(resolve => setTimeout(resolve, 1500)); // Simulate network delay
-      
+      await new Promise(resolve => setTimeout(resolve, 1500));
+
       if (event.eventType === 'ORDER_CREATED') {
-        console.log(`📧 [Notification Worker] Sent Email to User ${event.userId}: "Your order #${event.orderId} is confirmed!"`);
+        console.log(`📧 [Notification Worker] Sent Email to User ${event.userId}`);
       } else if (event.eventType === 'ORDER_FAILED') {
-        console.log(`📧 [Notification Worker] Sent Email to User ${event.userId}: "Your order failed. Reason: ${event.reason}"`);
+        console.log(`📧 [Notification Worker] Sent failure email to User ${event.userId}`);
       }
 
-      // Log to DB so frontend can see it
+      // Log to Postgres event_logs
       await pgPool.query(
-        `INSERT INTO event_logs (topic, event_type, payload, processed_by) 
-         VALUES ($1, $2, $3, $4)`,
+        `INSERT INTO event_logs (topic, event_type, payload, processed_by) VALUES ($1, $2, $3, $4)`,
         [TOPICS.ORDERS, event.eventType, JSON.stringify(event), 'NotificationService']
       );
     },
   });
 
-  // 2. Analytics Service Consumer
+  // 2. Analytics Service Consumer (NOW WRITES TO CLICKHOUSE)
   await analyticsConsumer.subscribe({ topic: TOPICS.ORDERS, fromBeginning: false });
 
   await analyticsConsumer.run({
     eachMessage: async ({ message }) => {
       const event: OrderEvent = JSON.parse(message.value?.toString() || '{}');
-      
-      console.log(`📊 [Analytics Worker] Ingesting ${event.eventType} into Data Warehouse...`);
-      await new Promise(resolve => setTimeout(resolve, 800)); // Simulate ClickHouse/Columnar DB write
 
-      // Log to DB
+      console.log(`📊 [Analytics Worker] Ingesting ${event.eventType} into ClickHouse...`);
+      await new Promise(resolve => setTimeout(resolve, 800));
+
+      // Write to ClickHouse (Columnar DB)
+      await insertAnalyticsEvent({
+        event_type: event.eventType,
+        user_id: event.userId,
+        order_id: event.orderId,
+        total_amount: event.totalAmount,
+        processed_by: 'AnalyticsService',
+        status: event.eventType === 'ORDER_CREATED' ? 'COMPLETED' : 'FAILED',
+      });
+
+      // Also log to Postgres for compatibility
       await pgPool.query(
-        `INSERT INTO event_logs (topic, event_type, payload, processed_by) 
-         VALUES ($1, $2, $3, $4)`,
+        `INSERT INTO event_logs (topic, event_type, payload, processed_by) VALUES ($1, $2, $3, $4)`,
         [TOPICS.ORDERS, event.eventType, JSON.stringify(event), 'AnalyticsService']
       );
     },

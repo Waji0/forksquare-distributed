@@ -1,7 +1,6 @@
 version: '3.8'
 
 services:
-  # UPDATED: Use pgvector image for vector similarity search
   postgres:
     image: pgvector/pgvector:pg16
     container_name: forksquare_postgres
@@ -49,8 +48,38 @@ services:
     volumes:
       - redpanda_data:/var/lib/redpanda/data
 
+  # NEW: ClickHouse (Columnar DB for Analytics)
+  clickhouse:
+    image: clickhouse/clickhouse-server:24-alpine
+    container_name: forksquare_clickhouse
+    restart: always
+    ports:
+      - "8123:8123"
+      - "9000:9000"
+    volumes:
+      - clickhouse_data:/var/lib/clickhouse
+    ulimits:
+      nofile:
+        soft: 262144
+        hard: 262144
+
+  # NEW: Neo4j (Graph DB for Visualization)
+  neo4j:
+    image: neo4j:5-community
+    container_name: forksquare_neo4j
+    restart: always
+    environment:
+      NEO4J_AUTH: neo4j/forksquare_neo4j_pass
+    ports:
+      - "7474:7474"
+      - "7687:7687"
+    volumes:
+      - neo4j_data:/data
+
 volumes:
   postgres_data:
   mongo_data:
   redis_data:
   redpanda_data:
+  clickhouse_data:
+  neo4j_data:

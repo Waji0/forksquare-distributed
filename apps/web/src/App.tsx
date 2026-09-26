@@ -9,6 +9,8 @@ import RegisterPage from './pages/RegisterPage';
 import FlashSalePage from './pages/FlashSalePage';
 import ActivityPage from './pages/ActivityPage';
 import SimilarSearchPage from './pages/SimilarSearchPage';
+import AnalyticsPage from './pages/AnalyticsPage';
+import GraphPage from './pages/GraphPage';
 import NotFoundPage from './pages/NotFoundPage';
 
 export default function App() {
@@ -24,6 +26,8 @@ export default function App() {
         <Route path="/flash-sale" element={<FlashSalePage />} />
         <Route path="/activity" element={<ActivityPage />} />
         <Route path="/similar-search" element={<SimilarSearchPage />} />
+        <Route path="/analytics" element={<AnalyticsPage />} />
+        <Route path="/graph" element={<GraphPage />} />
         <Route path="*" element={<NotFoundPage />} />
       </Route>
     </Routes>
