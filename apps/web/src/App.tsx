@@ -11,6 +11,8 @@ import ActivityPage from './pages/ActivityPage';
 import SimilarSearchPage from './pages/SimilarSearchPage';
 import AnalyticsPage from './pages/AnalyticsPage';
 import GraphPage from './pages/GraphPage';
+import HashRingPage from './pages/HashRingPage';
+import VectorClockPage from './pages/VectorClockPage';
 import NotFoundPage from './pages/NotFoundPage';
 
 export default function App() {
@@ -28,6 +30,8 @@ export default function App() {
         <Route path="/similar-search" element={<SimilarSearchPage />} />
         <Route path="/analytics" element={<AnalyticsPage />} />
         <Route path="/graph" element={<GraphPage />} />
+        <Route path="/hash-ring" element={<HashRingPage />} />
+        <Route path="/vector-clock" element={<VectorClockPage />} />
         <Route path="*" element={<NotFoundPage />} />
       </Route>
     </Routes>

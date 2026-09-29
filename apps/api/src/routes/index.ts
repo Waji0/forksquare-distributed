@@ -8,6 +8,8 @@ import eventRoutes from './event.routes';
 import similarRoutes from './similar.routes';
 import analyticsRoutes from './analytics.routes';
 import graphRoutes from './graph.routes';
+import hashRingRoutes from './hashRing.routes';
+import vectorClockRoutes from './vectorClock.routes';
 
 const router = Router();
 
@@ -20,5 +22,7 @@ router.use('/events', eventRoutes);
 router.use('/similar', similarRoutes);
 router.use('/analytics', analyticsRoutes);
 router.use('/graph', graphRoutes);
+router.use('/hash-ring', hashRingRoutes);
+router.use('/vector-clock', vectorClockRoutes);
 
 export default router;

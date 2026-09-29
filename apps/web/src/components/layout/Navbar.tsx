@@ -16,6 +16,8 @@ const navItems: NavItem[] = [
   { to: '/similar-search', label: '🧠 AI Search' },
   { to: '/analytics', label: '📊 Analytics' },
   { to: '/graph', label: '🔗 Graph' },
+  { to: '/hash-ring', label: '🔄 Hash Ring' },
+  { to: '/vector-clock', label: '🕐 Vector Clock' },
   { to: '/activity', label: '📡 Activity' },
 ];
 
