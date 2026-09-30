@@ -10,11 +10,11 @@ import analyticsRoutes from './analytics.routes';
 import graphRoutes from './graph.routes';
 import hashRingRoutes from './hashRing.routes';
 import vectorClockRoutes from './vectorClock.routes';
-
 import shardRoutes from './shard.routes';
 import commitProtocolRoutes from './commitProtocol.routes';
-
-
+import raftRoutes from './raft.routes';
+import walRoutes from './wal.routes';
+import distributedJoinRoutes from './distributedJoin.routes';
 
 const router = Router();
 
@@ -29,8 +29,10 @@ router.use('/analytics', analyticsRoutes);
 router.use('/graph', graphRoutes);
 router.use('/hash-ring', hashRingRoutes);
 router.use('/vector-clock', vectorClockRoutes);
-
 router.use('/shards', shardRoutes);
 router.use('/commit-protocols', commitProtocolRoutes);
+router.use('/raft', raftRoutes);
+router.use('/wal', walRoutes);
+router.use('/distributed-joins', distributedJoinRoutes);
 
 export default router;
