@@ -15,6 +15,11 @@ import HashRingPage from './pages/HashRingPage';
 import VectorClockPage from './pages/VectorClockPage';
 import NotFoundPage from './pages/NotFoundPage';
 
+import ShardTopologyPage from './pages/ShardTopologyPage';
+import CommitProtocolsPage from './pages/CommitProtocolsPage';
+
+
+
 export default function App() {
   return (
     <Routes>
@@ -33,6 +38,8 @@ export default function App() {
         <Route path="/hash-ring" element={<HashRingPage />} />
         <Route path="/vector-clock" element={<VectorClockPage />} />
         <Route path="*" element={<NotFoundPage />} />
+        <Route path="/shards" element={<ShardTopologyPage />} />
+        <Route path="/commit-protocols" element={<CommitProtocolsPage />} />
       </Route>
     </Routes>
   );

@@ -19,6 +19,8 @@ const navItems: NavItem[] = [
   { to: '/hash-ring', label: '🔄 Hash Ring' },
   { to: '/vector-clock', label: '🕐 Vector Clock' },
   { to: '/activity', label: '📡 Activity' },
+  { to: '/shards', label: '🗂️ Shards' },
+  { to: '/commit-protocols', label: '🤝 2PC/3PC' },
 ];
 
 export default function Navbar() {

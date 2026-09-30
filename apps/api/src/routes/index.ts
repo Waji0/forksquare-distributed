@@ -11,6 +11,11 @@ import graphRoutes from './graph.routes';
 import hashRingRoutes from './hashRing.routes';
 import vectorClockRoutes from './vectorClock.routes';
 
+import shardRoutes from './shard.routes';
+import commitProtocolRoutes from './commitProtocol.routes';
+
+
+
 const router = Router();
 
 router.use('/auth', authRoutes);
@@ -24,5 +29,8 @@ router.use('/analytics', analyticsRoutes);
 router.use('/graph', graphRoutes);
 router.use('/hash-ring', hashRingRoutes);
 router.use('/vector-clock', vectorClockRoutes);
+
+router.use('/shards', shardRoutes);
+router.use('/commit-protocols', commitProtocolRoutes);
 
 export default router;
