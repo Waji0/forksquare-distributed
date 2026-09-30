@@ -15,6 +15,9 @@ import commitProtocolRoutes from './commitProtocol.routes';
 import raftRoutes from './raft.routes';
 import walRoutes from './wal.routes';
 import distributedJoinRoutes from './distributedJoin.routes';
+import cartRoutes from './cart.routes';
+import orderTrackingRoutes from './orderTracking.routes';
+import replicaRoutes from './replica.routes';
 
 const router = Router();
 
@@ -34,5 +37,8 @@ router.use('/commit-protocols', commitProtocolRoutes);
 router.use('/raft', raftRoutes);
 router.use('/wal', walRoutes);
 router.use('/distributed-joins', distributedJoinRoutes);
+router.use('/cart', cartRoutes);
+router.use('/order-tracking', orderTrackingRoutes);
+router.use('/replicas', replicaRoutes);
 
 export default router;

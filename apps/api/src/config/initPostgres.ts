@@ -184,6 +184,32 @@ export async function initPostgresTables() {
       console.log('⚠️  Vector index skipped (not enough rows for IVFFlat)');
     }
 
+    // NEW: Cart Items Table
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS cart_items (
+        id SERIAL PRIMARY KEY,
+        user_id INT NOT NULL,
+        item_id VARCHAR(255) NOT NULL,
+        item_name VARCHAR(255) NOT NULL,
+        restaurant_name VARCHAR(255) NOT NULL,
+        quantity INT NOT NULL DEFAULT 1,
+        price DECIMAL(10, 2) NOT NULL,
+        added_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(user_id, item_id)
+      );
+    `);
+
+    // NEW: Order Tracking Status History
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS order_status_history (
+        id SERIAL PRIMARY KEY,
+        order_id INT NOT NULL REFERENCES orders(id),
+        status VARCHAR(50) NOT NULL,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        note TEXT DEFAULT ''
+      );
+    `);
+
     console.log('✅ PostgreSQL Tables Initialized');
   } catch (error) {
     console.error('❌ Error initializing PostgreSQL tables:', error);

@@ -18,6 +18,8 @@ import NotFoundPage from './pages/NotFoundPage';
 import ShardTopologyPage from './pages/ShardTopologyPage';
 import CommitProtocolsPage from './pages/CommitProtocolsPage';
 
+import OrderTrackingPage from './pages/OrderTrackingPage';
+
 
 
 export default function App() {
@@ -40,6 +42,7 @@ export default function App() {
         <Route path="*" element={<NotFoundPage />} />
         <Route path="/shards" element={<ShardTopologyPage />} />
         <Route path="/commit-protocols" element={<CommitProtocolsPage />} />
+        <Route path="/track-order" element={<OrderTrackingPage />} />
       </Route>
     </Routes>
   );
