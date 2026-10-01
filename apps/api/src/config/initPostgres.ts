@@ -127,6 +127,34 @@ export async function initPostgresTables() {
       );
     `);
 
+    // Phase 0: Add role column for RBAC
+    await client.query(`
+      ALTER TABLE users
+      ADD COLUMN IF NOT EXISTS role VARCHAR(50) NOT NULL DEFAULT 'user';
+    `);
+
+    // Phase 0: Refresh tokens table for proper token lifecycle
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS refresh_tokens (
+        id SERIAL PRIMARY KEY,
+        user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        token_hash VARCHAR(255) NOT NULL,
+        expires_at TIMESTAMP NOT NULL,
+        revoked BOOLEAN NOT NULL DEFAULT FALSE,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+
+    // Phase 0: Index for fast refresh token lookups
+    await client.query(`
+      CREATE INDEX IF NOT EXISTS idx_refresh_tokens_user
+      ON refresh_tokens(user_id);
+    `);
+    await client.query(`
+      CREATE INDEX IF NOT EXISTS idx_refresh_tokens_hash
+      ON refresh_tokens(token_hash);
+    `);
+
     await client.query(`
       CREATE TABLE IF NOT EXISTS inventory (
         id SERIAL PRIMARY KEY,

@@ -198,6 +198,24 @@ async function seed() {
     await pgPool.end();
   }
 
+  // Seed an admin user for RBAC testing
+  try {
+    const bcrypt = await import('bcryptjs');
+    const adminPasswordHash = await bcrypt.hash('admin_password_123', 12);
+
+    const client = await pgPool.connect();
+    await client.query(
+      `INSERT INTO users (username, email, password_hash, role)
+       VALUES ($1, $2, $3, $4)
+       ON CONFLICT (email) DO UPDATE SET role = $4`,
+      ['admin', 'admin@forksquare.com', adminPasswordHash, 'admin']
+    );
+    client.release();
+    console.log('👤 Admin user seeded: admin@forksquare.com / admin_password_123');
+  } catch (error) {
+    console.error('❌ Admin seed error:', error);
+  }
+
   // 3. Populate Bloom Filter
   try {
     await bloomAddBulk(seedUsernames);
