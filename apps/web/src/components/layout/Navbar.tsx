@@ -22,6 +22,7 @@ const navItems: NavItem[] = [
   { to: '/shards', label: '🗂️ Shards' },
   { to: '/commit-protocols', label: '🤝 2PC/3PC' },
   { to: '/track-order', label: '📦 Track Order' },
+  { to: '/admin', label: '🛠️ Admin' },
 ];
 
 export default function Navbar() {

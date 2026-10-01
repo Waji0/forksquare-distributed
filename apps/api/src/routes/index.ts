@@ -1,3 +1,63 @@
+// import { Router } from 'express';
+// import authRoutes from './auth.routes';
+// import restaurantRoutes from './restaurant.routes';
+// import orderRoutes from './order.routes';
+// import systemRoutes from './system.routes';
+// import flashSaleRoutes from './flashSale.routes';
+// import eventRoutes from './event.routes';
+// import similarRoutes from './similar.routes';
+// import analyticsRoutes from './analytics.routes';
+// import graphRoutes from './graph.routes';
+// import hashRingRoutes from './hashRing.routes';
+// import vectorClockRoutes from './vectorClock.routes';
+// import shardRoutes from './shard.routes';
+// import commitProtocolRoutes from './commitProtocol.routes';
+// import raftRoutes from './raft.routes';
+// import walRoutes from './wal.routes';
+// import distributedJoinRoutes from './distributedJoin.routes';
+// import cartRoutes from './cart.routes';
+// import orderTrackingRoutes from './orderTracking.routes';
+// import replicaRoutes from './replica.routes';
+// import tracingRoutes from './tracing.routes';
+// import adminRoutes from './admin.routes';
+// import paymentRoutes from './payment.routes';
+// import emailRoutes from './email.routes';
+// import uploadRoutes from './upload.routes';
+
+
+
+// const router = Router();
+
+// router.use('/auth', authRoutes);
+// router.use('/restaurants', restaurantRoutes);
+// router.use('/orders', orderRoutes);
+// router.use('/system', systemRoutes);
+// router.use('/flash-sale', flashSaleRoutes);
+// router.use('/events', eventRoutes);
+// router.use('/similar', similarRoutes);
+// router.use('/analytics', analyticsRoutes);
+// router.use('/graph', graphRoutes);
+// router.use('/hash-ring', hashRingRoutes);
+// router.use('/vector-clock', vectorClockRoutes);
+// router.use('/shards', shardRoutes);
+// router.use('/commit-protocols', commitProtocolRoutes);
+// router.use('/raft', raftRoutes);
+// router.use('/wal', walRoutes);
+// router.use('/distributed-joins', distributedJoinRoutes);
+// router.use('/cart', cartRoutes);
+// router.use('/order-tracking', orderTrackingRoutes);
+// router.use('/replicas', replicaRoutes);
+// router.use('/tracing', tracingRoutes);
+// router.use('/admin', adminRoutes);
+// router.use('/payments', paymentRoutes);
+// router.use('/email', emailRoutes);
+// router.use('/upload', uploadRoutes);
+
+// export default router;
+
+
+
+
 import { Router } from 'express';
 import authRoutes from './auth.routes';
 import restaurantRoutes from './restaurant.routes';
@@ -18,6 +78,11 @@ import distributedJoinRoutes from './distributedJoin.routes';
 import cartRoutes from './cart.routes';
 import orderTrackingRoutes from './orderTracking.routes';
 import replicaRoutes from './replica.routes';
+import tracingRoutes from './tracing.routes';
+import adminRoutes from './admin.routes';
+import paymentRoutes from './payment.routes';
+import emailRoutes from './email.routes';
+import uploadRoutes from './upload.routes';
 
 const router = Router();
 
@@ -40,5 +105,10 @@ router.use('/distributed-joins', distributedJoinRoutes);
 router.use('/cart', cartRoutes);
 router.use('/order-tracking', orderTrackingRoutes);
 router.use('/replicas', replicaRoutes);
+router.use('/tracing', tracingRoutes);
+router.use('/admin', adminRoutes);
+router.use('/payments', paymentRoutes);
+router.use('/email', emailRoutes);
+router.use('/upload', uploadRoutes);
 
 export default router;

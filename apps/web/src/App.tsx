@@ -19,6 +19,7 @@ import ShardTopologyPage from './pages/ShardTopologyPage';
 import CommitProtocolsPage from './pages/CommitProtocolsPage';
 
 import OrderTrackingPage from './pages/OrderTrackingPage';
+import AdminPage from './pages/AdminPage';
 
 
 
@@ -43,6 +44,7 @@ export default function App() {
         <Route path="/shards" element={<ShardTopologyPage />} />
         <Route path="/commit-protocols" element={<CommitProtocolsPage />} />
         <Route path="/track-order" element={<OrderTrackingPage />} />
+        <Route path="/admin" element={<AdminPage />} />
       </Route>
     </Routes>
   );
