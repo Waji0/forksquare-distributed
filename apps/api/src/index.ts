@@ -107,7 +107,7 @@ import path from 'path';
 
 import { env, isProduction } from './config/env';
 import logger, { httpLogger } from './config/logger';
-import { connectMongo, connectPostgres, redisClient, pgPool } from './config/db';
+import { connectMongo, connectPostgres, connectPostgresReplica, redisClient, pgPool } from './config/db';
 import { initPostgresTables } from './config/initPostgres';
 import { initClickHouse } from './config/clickhouse';
 import { initNeo4j } from './config/neo4j';
@@ -116,6 +116,7 @@ import { tracingMiddleware } from './middlewares/tracing';
 import { startConsumers } from './workers/eventConsumers';
 import routes from './routes';
 import { connectKafka, disconnectKafka } from './config/kafka';
+
 
 const app = express();
 
@@ -246,6 +247,7 @@ async function startServer() {
 
     await connectMongo();
     await connectPostgres();
+    await connectPostgresReplica();
     await initPostgresTables();
     await initClickHouse();
     await initNeo4j();

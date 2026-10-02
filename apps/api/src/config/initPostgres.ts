@@ -155,6 +155,15 @@ export async function initPostgresTables() {
       ON refresh_tokens(token_hash);
     `);
 
+    // Phase 1: Table used to demonstrate replication lag
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS replication_demo (
+        id SERIAL PRIMARY KEY,
+        test_value TEXT NOT NULL,
+        written_at TIMESTAMP DEFAULT now()
+      );
+    `);
+
     await client.query(`
       CREATE TABLE IF NOT EXISTS inventory (
         id SERIAL PRIMARY KEY,

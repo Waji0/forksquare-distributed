@@ -84,6 +84,10 @@ import paymentRoutes from './payment.routes';
 import emailRoutes from './email.routes';
 import uploadRoutes from './upload.routes';
 
+import replicationRoutes from './replication.routes';
+
+
+
 const router = Router();
 
 router.use('/auth', authRoutes);
@@ -110,5 +114,6 @@ router.use('/admin', adminRoutes);
 router.use('/payments', paymentRoutes);
 router.use('/email', emailRoutes);
 router.use('/upload', uploadRoutes);
+router.use('/replication', replicationRoutes);
 
 export default router;

@@ -1,6 +1,24 @@
 version: '3.8'
 
 services:
+  # postgres:
+  #   image: pgvector/pgvector:pg16
+  #   container_name: forksquare_postgres
+  #   restart: always
+  #   environment:
+  #     POSTGRES_USER: forksquare
+  #     POSTGRES_PASSWORD: forksquare_secret
+  #     POSTGRES_DB: forksquare_orders
+  #   ports:
+  #     - "5432:5432"
+  #   volumes:
+  #     - postgres_data:/var/lib/postgresql/data
+
+
+
+  # ============================================
+  # PRIMARY (handles all WRITES)
+  # ============================================
   postgres:
     image: pgvector/pgvector:pg16
     container_name: forksquare_postgres
@@ -9,10 +27,57 @@ services:
       POSTGRES_USER: forksquare
       POSTGRES_PASSWORD: forksquare_secret
       POSTGRES_DB: forksquare_orders
+    command:
+      - postgres
+      - -c
+      - wal_level=replica          # Required for streaming replication
+      - -c
+      - max_wal_senders=10         # Max concurrent WAL sender processes
+      - -c
+      - max_replication_slots=10   # Max replication slots
+      - -c
+      - hot_standby=on             # Allow reads on standby
+      - -c
+      - wal_log_hints=on           # Enables pg_rewind for failover
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./docker/postgres/primary:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U forksquare -d forksquare_orders"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # ============================================
+  # STANDBY (handles READS, streams WAL from primary)
+  # ============================================
+  postgres-standby:
+    image: pgvector/pgvector:pg16
+    container_name: forksquare_postgres_standby
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      PRIMARY_HOST: postgres
+      PRIMARY_PORT: "5432"
+      REPLICATOR_USER: replicator
+      REPLICATOR_PASSWORD: replicator_password
+      PGDATA: /var/lib/postgresql/data
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_standby_data:/var/lib/postgresql/data
+      - ./docker/postgres/standby:/standby-setup
+    entrypoint: ["sh", "/standby-setup/setup_standby.sh"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U forksquare -d forksquare_orders"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 30s
 
   mongo:
     image: mongo:7
@@ -78,6 +143,7 @@ services:
 
 volumes:
   postgres_data:
+  postgres_standby_data:
   mongo_data:
   redis_data:
   redpanda_data:
