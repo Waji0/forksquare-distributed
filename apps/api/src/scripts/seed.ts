@@ -9,6 +9,8 @@ import { generateEmbedding, formatVectorForPostgres, buildFoodText } from '../se
 import { neo4jDriver } from '../config/neo4j';
 import { seedGraph } from '../services/graph';
 
+import bcrypt from 'bcryptjs';
+
 const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/forksquare_menus';
 const DATABASE_URL =
   process.env.DATABASE_URL ||
@@ -190,17 +192,8 @@ async function seed() {
     }
     console.log(`🧬 Generated and inserted ${foodItemsForEmbedding.length} food embeddings (128-dim vectors)\n`);
 
-    client.release();
-  } catch (error) {
-    console.error('❌ PostgreSQL seed error:', error);
-    process.exit(1);
-  } finally {
-    await pgPool.end();
-  }
-
-  // Seed an admin user for RBAC testing
+    // Seed an admin user for RBAC testing
   try {
-    const bcrypt = await import('bcryptjs');
     const adminPasswordHash = await bcrypt.hash('admin_password_123', 12);
 
     const client = await pgPool.connect();
@@ -214,6 +207,14 @@ async function seed() {
     console.log('👤 Admin user seeded: admin@forksquare.com / admin_password_123');
   } catch (error) {
     console.error('❌ Admin seed error:', error);
+  }
+
+    client.release();
+  } catch (error) {
+    console.error('❌ PostgreSQL seed error:', error);
+    process.exit(1);
+  } finally {
+    await pgPool.end();
   }
 
   // 3. Populate Bloom Filter
