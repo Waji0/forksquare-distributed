@@ -39,6 +39,8 @@ services:
       - hot_standby=on             # Allow reads on standby
       - -c
       - wal_log_hints=on           # Enables pg_rewind for failover
+      - -c 
+      - max_prepared_transactions=50
     ports:
       - "5432:5432"
     volumes:

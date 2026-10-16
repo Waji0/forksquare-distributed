@@ -86,6 +86,7 @@ import uploadRoutes from './upload.routes';
 
 import replicationRoutes from './replication.routes';
 import partitionRoutes from './partition.routes';
+import real2pcRoutes from './real2pc.routes';
 
 
 const router = Router();
@@ -116,5 +117,6 @@ router.use('/email', emailRoutes);
 router.use('/upload', uploadRoutes);
 router.use('/replication', replicationRoutes);
 router.use('/partitions', partitionRoutes);
+router.use('/real-2pc', real2pcRoutes);
 
 export default router;

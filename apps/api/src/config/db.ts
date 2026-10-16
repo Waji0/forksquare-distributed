@@ -30,6 +30,11 @@ export const pgPool = new Pool({
   max: 20,
 });
 
+// Prevent app crash if primary connection drops unexpectedly
+pgPool.on('error', (err) => {
+  console.error('❌ Unexpected error on idle PostgreSQL PRIMARY client:', err.message);
+});
+
 // ==========================================
 // PostgreSQL STANDBY (READ-only replica) — Phase 1
 // ==========================================
@@ -38,6 +43,11 @@ export const pgReplicaPool = new Pool({
     process.env.DATABASE_REPLICA_URL ||
     'postgresql://forksquare:forksquare_secret@localhost:5433/forksquare_orders',
   max: 10,
+});
+
+// Prevent app crash if standby connection drops unexpectedly
+pgReplicaPool.on('error', (err) => {
+  console.error('❌ Unexpected error on idle PostgreSQL STANDBY client:', err.message);
 });
 
 /**
