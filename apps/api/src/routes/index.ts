@@ -73,7 +73,6 @@ import vectorClockRoutes from './vectorClock.routes';
 import shardRoutes from './shard.routes';
 import commitProtocolRoutes from './commitProtocol.routes';
 import raftRoutes from './raft.routes';
-import walRoutes from './wal.routes';
 import distributedJoinRoutes from './distributedJoin.routes';
 import cartRoutes from './cart.routes';
 import orderTrackingRoutes from './orderTracking.routes';
@@ -90,6 +89,9 @@ import real2pcRoutes from './real2pc.routes';
 
 import realRaftRoutes from './realRaft.routes';
 import distributedSqlRoutes from './distributedSql.routes';
+import walRoutes from './wal.routes';
+
+
 
 
 const router = Router();
@@ -108,7 +110,6 @@ router.use('/vector-clock', vectorClockRoutes);
 router.use('/shards', shardRoutes);
 router.use('/commit-protocols', commitProtocolRoutes);
 router.use('/raft', raftRoutes);
-router.use('/wal', walRoutes);
 router.use('/distributed-joins', distributedJoinRoutes);
 router.use('/cart', cartRoutes);
 router.use('/order-tracking', orderTrackingRoutes);
@@ -123,5 +124,6 @@ router.use('/partitions', partitionRoutes);
 router.use('/real-2pc', real2pcRoutes);
 router.use('/real-raft', realRaftRoutes);
 router.use('/distributed-sql', distributedSqlRoutes);
+router.use('/wal', walRoutes);
 
 export default router;

@@ -205,6 +205,32 @@ services:
     volumes:
       - cockroach_data:/cockroach/cockroach-data
 
+  # ============================================
+  # OBSERVABILITY (Prometheus + Grafana) - Phase 6
+  # ============================================
+  prometheus:
+    image: prom/prometheus:v2.45.0
+    container_name: forksquare_prometheus
+    restart: unless-stopped
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./docker/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+
+  grafana:
+    image: grafana/grafana:10.0.0
+    container_name: forksquare_grafana
+    restart: unless-stopped
+    ports:
+     - "3000:3000" # Admin UI
+    environment:
+     - GF_SECURITY_ADMIN_USER=admin
+     - GF_SECURITY_ADMIN_PASSWORD=admin
+     - GF_USERS_ALLOW_SIGN_UP=false
+    volumes:
+    - grafana_data:/var/lib/grafana    
+
 volumes:
   postgres_data:
   postgres_standby_data:
@@ -214,3 +240,5 @@ volumes:
   clickhouse_data:
   neo4j_data:
   cockroach_data:
+  prometheus_data:
+  grafana_data:

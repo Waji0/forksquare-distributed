@@ -117,7 +117,7 @@ import { startConsumers } from './workers/eventConsumers';
 import routes from './routes';
 import { connectKafka, disconnectKafka } from './config/kafka';
 import { connectCockroachDB } from "./config/db";
-
+import { register, metricsMiddleware, startMetricsUpdater } from './services/metrics';
 
 const app = express();
 
@@ -156,6 +156,7 @@ app.use(
 
 // 4. Body parsing
 app.use(express.json({ limit: '1mb' }));
+app.use(metricsMiddleware);
 app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 
 // 5. Serve uploaded files statically
@@ -226,6 +227,12 @@ app.get('/api/health', async (_req, res) => {
   });
 });
 
+// Prometheus metrics endpoint
+app.get('/metrics', async (_req, res) => {
+  res.set('Content-Type', register.contentType);
+  res.end(await register.metrics());
+});
+
 // ==========================================
 // API ROUTES
 // ==========================================
@@ -253,6 +260,7 @@ async function startServer() {
     await initClickHouse();
     await initNeo4j();
     await connectCockroachDB();
+    startMetricsUpdater();
 
     await new Promise<void>((resolve) => {
       if (redisClient.status === 'ready') resolve();
