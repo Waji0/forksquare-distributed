@@ -124,3 +124,26 @@ redisClient.on('connect', () => {
 redisClient.on('error', (err) => {
   console.error('❌ Redis Connection Error:', err);
 });
+
+// ==========================================
+// CockroachDB (Distributed SQL) — Phase 5
+// ==========================================
+// CockroachDB speaks the PostgreSQL wire protocol, so we use the `pg` library.
+export const cockroachPool = new Pool({
+  connectionString: 'postgresql://root@localhost:26257/defaultdb',
+  max: 5,
+});
+
+cockroachPool.on('error', (err) => {
+  console.error('❌ Unexpected error on idle CockroachDB client:', err.message);
+});
+
+export const connectCockroachDB = async () => {
+  try {
+    const client = await cockroachPool.connect();
+    console.log('✅ CockroachDB Connected (Distributed SQL)');
+    client.release();
+  } catch (error) {
+    console.warn('⚠️  CockroachDB not available. Distributed SQL demos will be skipped.');
+  }
+};

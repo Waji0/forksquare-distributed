@@ -116,6 +116,7 @@ import { tracingMiddleware } from './middlewares/tracing';
 import { startConsumers } from './workers/eventConsumers';
 import routes from './routes';
 import { connectKafka, disconnectKafka } from './config/kafka';
+import { connectCockroachDB } from "./config/db";
 
 
 const app = express();
@@ -251,6 +252,7 @@ async function startServer() {
     await initPostgresTables();
     await initClickHouse();
     await initNeo4j();
+    await connectCockroachDB();
 
     await new Promise<void>((resolve) => {
       if (redisClient.status === 'ready') resolve();

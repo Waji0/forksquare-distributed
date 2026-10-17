@@ -89,6 +89,7 @@ import partitionRoutes from './partition.routes';
 import real2pcRoutes from './real2pc.routes';
 
 import realRaftRoutes from './realRaft.routes';
+import distributedSqlRoutes from './distributedSql.routes';
 
 
 const router = Router();
@@ -121,5 +122,6 @@ router.use('/replication', replicationRoutes);
 router.use('/partitions', partitionRoutes);
 router.use('/real-2pc', real2pcRoutes);
 router.use('/real-raft', realRaftRoutes);
+router.use('/distributed-sql', distributedSqlRoutes);
 
 export default router;

@@ -191,6 +191,20 @@ services:
     volumes:
       - neo4j_data:/data
 
+  # ============================================
+  # DISTRIBUTED SQL (CockroachDB) - Week 16
+  # ============================================
+  cockroach:
+    image: cockroachdb/cockroach:v23.2.0
+    container_name: forksquare_cockroach
+    restart: unless-stopped
+    command: start-single-node --insecure --store=cockroach-data
+    ports:
+      - "26257:26257" # SQL Port (PostgreSQL wire protocol)
+      - "8080:8080"   # Admin UI Port (Visual Dashboard!)
+    volumes:
+      - cockroach_data:/cockroach/cockroach-data
+
 volumes:
   postgres_data:
   postgres_standby_data:
@@ -199,3 +213,4 @@ volumes:
   redpanda_data:
   clickhouse_data:
   neo4j_data:
+  cockroach_data:
