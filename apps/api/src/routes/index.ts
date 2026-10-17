@@ -88,6 +88,8 @@ import replicationRoutes from './replication.routes';
 import partitionRoutes from './partition.routes';
 import real2pcRoutes from './real2pc.routes';
 
+import realRaftRoutes from './realRaft.routes';
+
 
 const router = Router();
 
@@ -118,5 +120,6 @@ router.use('/upload', uploadRoutes);
 router.use('/replication', replicationRoutes);
 router.use('/partitions', partitionRoutes);
 router.use('/real-2pc', real2pcRoutes);
+router.use('/real-raft', realRaftRoutes);
 
 export default router;
