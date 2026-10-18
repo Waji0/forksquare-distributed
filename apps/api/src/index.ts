@@ -103,7 +103,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import mongoose from 'mongoose';
-import path from 'path';
+// import path from 'path';
 
 import { env, isProduction } from './config/env';
 import logger, { httpLogger } from './config/logger';
@@ -160,7 +160,7 @@ app.use(metricsMiddleware);
 app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 
 // 5. Serve uploaded files statically
-app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
+// app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 
 // 6. General rate limiter (applies to all /api routes)
 const generalLimiter = rateLimit({

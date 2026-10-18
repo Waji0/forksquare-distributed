@@ -9,5 +9,11 @@
     "dev:api": "npm run dev -w @forksquare/api",
     "build": "npm run build -w @forksquare/api && npm run build -w @forksquare/web",
     "typecheck": "npm run typecheck -w @forksquare/api && npm run typecheck -w @forksquare/web"
+  },
+  "dependencies": {
+    "nodemailer": "^10.1.2"
+  },
+  "devDependencies": {
+    "@types/nodemailer": "^8.0.2"
   }
 }
