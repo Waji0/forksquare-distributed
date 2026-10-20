@@ -119,6 +119,9 @@ import { connectKafka, disconnectKafka } from './config/kafka';
 import { connectCockroachDB } from "./config/db";
 import { register, metricsMiddleware, startMetricsUpdater } from './services/metrics';
 
+import swaggerUi from 'swagger-ui-express';
+import { swaggerSpec } from './config/swagger';
+
 const app = express();
 
 // ==========================================
@@ -231,6 +234,19 @@ app.get('/api/health', async (_req, res) => {
 app.get('/metrics', async (_req, res) => {
   res.set('Content-Type', register.contentType);
   res.end(await register.metrics());
+});
+
+// ==========================================
+// Swagger API Documentation
+// ==========================================
+app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
+  customSiteTitle: 'ForkSquare API Docs',
+  customCss: '.swagger-ui .topbar { display: none }',
+}));
+
+app.get('/api/docs.json', (_req, res) => {
+  res.setHeader('Content-Type', 'application/json');
+  res.send(swaggerSpec);
 });
 
 // ==========================================
