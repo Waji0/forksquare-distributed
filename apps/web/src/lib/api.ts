@@ -346,4 +346,16 @@ export async function fetchSystemStats(): Promise<SystemStatsResponse> {
   return response.data;
 }
 
+
+export async function forgotPassword(email: string) {
+  const response = await api.post<{ success: boolean; message: string }>('/auth/forgot-password', { email });
+  return response.data;
+}
+
+export async function resetPassword(token: string, newPassword: string) {
+  const response = await api.post<{ success: boolean; message: string }>('/auth/reset-password', { token, newPassword });
+  return response.data;
+}
+
+
 export default api;

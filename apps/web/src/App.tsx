@@ -22,6 +22,8 @@ import OrderTrackingPage from './pages/OrderTrackingPage';
 import AdminPage from './pages/AdminPage';
 
 import VerifyEmailPage from './pages/VerifyEmailPage';
+import ForgotPasswordPage from './pages/ForgotPasswordPage';
+import ResetPasswordPage from './pages/ResetPasswordPage';
 
 
 export default function App() {
@@ -47,6 +49,8 @@ export default function App() {
         <Route path="/track-order" element={<OrderTrackingPage />} />
         <Route path="/admin" element={<AdminPage />} />
         <Route path="/verify-email" element={<VerifyEmailPage />} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="/reset" element={<ResetPasswordPage />} />
       </Route>
     </Routes>
   );

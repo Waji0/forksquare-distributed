@@ -253,6 +253,7 @@ import logger from '../config/logger';
 
 import { emailService } from '../services/email';
 
+
 const registerSchema = z.object({
   username: z.string().min(3).max(30),
   email: z.string().email(),
@@ -292,6 +293,20 @@ function hashVerificationCode(code: string): string {
 }
 
 const VERIFICATION_CODE_TTL_MS = 10 * 60 * 1000; // 10 minutes
+
+
+
+function generateResetToken(): string {
+  return crypto.randomBytes(32).toString('hex'); // 64-char hex string
+}
+
+function hashResetToken(token: string): string {
+  return crypto.createHash('sha256').update(token).digest('hex');
+}
+
+const RESET_TOKEN_TTL_MS = 60 * 60 * 1000; // 1 hour
+
+
 
 // ==========================================
 // POST /api/auth/register
@@ -841,6 +856,113 @@ export async function resendVerification(req: Request, res: Response, next: Next
     res.json({
       success: true,
       message: 'A new verification code has been sent to your email.',
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+// ==========================================
+// POST /api/auth/forgot-password
+// ==========================================
+const forgotPasswordSchema = z.object({
+  email: z.string().email(),
+});
+
+export async function forgotPassword(req: Request, res: Response, next: NextFunction) {
+  try {
+    const parsed = forgotPasswordSchema.safeParse(req.body);
+    if (!parsed.success) throw new ApiError(400, 'Valid email is required');
+
+    const { email } = parsed.data;
+
+    // Find user (we don't reveal if the email exists to prevent enumeration)
+    const result = await pgPool.query(
+      'SELECT id, username, email FROM users WHERE email = $1',
+      [email]
+    );
+
+    if (result.rows.length > 0) {
+      const user = result.rows[0];
+      const resetToken = generateResetToken();
+      const tokenHash = hashResetToken(resetToken);
+      const expires = new Date(Date.now() + RESET_TOKEN_TTL_MS);
+
+      // Store hashed token and expiry
+      await pgPool.query(
+        `UPDATE users 
+         SET reset_password_token_hash = $1, reset_password_token_expires = $2 
+         WHERE id = $3`,
+        [tokenHash, expires, user.id]
+      );
+
+      // Send reset email
+      await emailService.sendPasswordReset(user.email, resetToken);
+      
+      logger.info(`Password reset requested for: ${user.username}`);
+    }
+
+    // Always return the same success message to prevent email enumeration
+    res.json({
+      success: true,
+      message: 'If an account with this email exists, a password reset link has been sent.',
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+// ==========================================
+// POST /api/auth/reset-password
+// ==========================================
+const resetPasswordSchema = z.object({
+  token: z.string().min(1, 'Reset token is required'),
+  newPassword: z.string().min(6, 'Password must be at least 6 characters'),
+});
+
+export async function resetPassword(req: Request, res: Response, next: NextFunction) {
+  try {
+    const parsed = resetPasswordSchema.safeParse(req.body);
+    if (!parsed.success) {
+      throw new ApiError(400, parsed.error.errors[0]?.message ?? 'Validation failed');
+    }
+
+    const { token, newPassword } = parsed.data;
+    const tokenHash = hashResetToken(token);
+
+    // Find user by hashed token
+    const result = await pgPool.query(
+      `SELECT id, username, reset_password_token_expires 
+       FROM users WHERE reset_password_token_hash = $1`,
+      [tokenHash]
+    );
+
+    if (result.rows.length === 0) {
+      throw new ApiError(400, 'Invalid or expired reset token');
+    }
+
+    const user = result.rows[0];
+
+    // Check expiry
+    if (new Date(user.reset_password_token_expires) < new Date()) {
+      throw new ApiError(400, 'Reset token has expired. Please request a new one.');
+    }
+
+    // Hash new password and clear the reset token
+    const passwordHash = await bcrypt.hash(newPassword, 12);
+
+    await pgPool.query(
+      `UPDATE users 
+       SET password_hash = $1, reset_password_token_hash = NULL, reset_password_token_expires = NULL 
+       WHERE id = $2`,
+      [passwordHash, user.id]
+    );
+
+    logger.info(`Password reset successfully for user: ${user.username}`);
+
+    res.json({
+      success: true,
+      message: 'Password has been reset successfully. You can now log in.',
     });
   } catch (error) {
     next(error);

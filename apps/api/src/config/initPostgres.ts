@@ -503,6 +503,17 @@ export async function initPostgresTables() {
       ADD COLUMN IF NOT EXISTS verification_code_expires TIMESTAMP;
     `);
 
+    // Password Reset columns (Missing Feature 2)
+    await client.query(`
+      ALTER TABLE users
+      ADD COLUMN IF NOT EXISTS reset_password_token_hash VARCHAR(255);
+    `);
+
+    await client.query(`
+      ALTER TABLE users
+      ADD COLUMN IF NOT EXISTS reset_password_token_expires TIMESTAMP;
+    `);
+
     // ==========================================
     // INVENTORY TABLE (not partitioned — small reference data)
     // ==========================================
@@ -785,7 +796,7 @@ export async function initPostgresTables() {
     //   );
     // }
 
-        // ==========================================
+    // ==========================================
     // FOOD EMBEDDINGS (VECTOR SEARCH)
     // ==========================================
     await client.query(`

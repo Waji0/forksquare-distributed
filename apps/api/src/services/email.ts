@@ -243,14 +243,31 @@ class EmailService {
     return this.sendEmail(to, 'Your ForkSquare Verification Code', html, 'EMAIL_VERIFICATION');
   }
 
-  async sendPasswordReset(to: string, resetToken: string): Promise<boolean> {
+  // async sendPasswordReset(to: string, resetToken: string): Promise<boolean> {
+  //   const html = `
+  //     <h1>Password Reset Request</h1>
+  //     <p>Click the link below to reset your password:</p>
+  //     <a href="https://forksquare.app/reset?token=${resetToken}">Reset Password</a>
+  //     <p>This link expires in 1 hour.</p>
+  //   `;
+  //   return this.sendEmail(to, 'Password Reset - ForkSquare', html, 'PASSWORD_RESET');
+  // }
+
+    async sendPasswordReset(to: string, resetToken: string): Promise<boolean> {
+    // Use localhost for local testing, or your real domain for production
+    const resetUrl = `http://localhost:5173/reset?token=${resetToken}`;
+    
     const html = `
-      <h1>Password Reset Request</h1>
-      <p>Click the link below to reset your password:</p>
-      <a href="https://forksquare.app/reset?token=${resetToken}">Reset Password</a>
-      <p>This link expires in 1 hour.</p>
+      <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto;">
+        <h1>Reset Your Password — ForkSquare 🔒</h1>
+        <p>You requested a password reset for your account.</p>
+        <p>Click the button below to set a new password:</p>
+        <a href="${resetUrl}" style="display: inline-block; background: #ea580c; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; margin: 16px 0;">Reset Password</a>
+        <p style="font-size: 12px; color: #64748b;">Or copy and paste this link into your browser:<br>${resetUrl}</p>
+        <p style="font-size: 12px; color: #64748b;">This link expires in 1 hour. If you didn't request this, you can safely ignore this email.</p>
+      </div>
     `;
-    return this.sendEmail(to, 'Password Reset - ForkSquare', html, 'PASSWORD_RESET');
+    return this.sendEmail(to, 'Reset Your ForkSquare Password', html, 'PASSWORD_RESET');
   }
 
   isReal(): boolean {
