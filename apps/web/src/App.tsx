@@ -21,6 +21,7 @@ import CommitProtocolsPage from './pages/CommitProtocolsPage';
 import OrderTrackingPage from './pages/OrderTrackingPage';
 import AdminPage from './pages/AdminPage';
 
+import VerifyEmailPage from './pages/VerifyEmailPage';
 
 
 export default function App() {
@@ -45,6 +46,7 @@ export default function App() {
         <Route path="/commit-protocols" element={<CommitProtocolsPage />} />
         <Route path="/track-order" element={<OrderTrackingPage />} />
         <Route path="/admin" element={<AdminPage />} />
+        <Route path="/verify-email" element={<VerifyEmailPage />} />
       </Route>
     </Routes>
   );

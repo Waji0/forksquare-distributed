@@ -7,7 +7,7 @@ import {
   clearCart,
   checkoutCart,
 } from '../controllers/cart.controller';
-import { authenticateToken } from '../middlewares/auth';
+import { authenticateToken, requireVerified } from '../middlewares/auth';
 
 const router = Router();
 
@@ -20,5 +20,7 @@ router.post('/checkout', checkoutCart);
 router.delete('/clear', clearCart);
 router.patch('/:itemId', updateCartItem);
 router.delete('/:itemId', removeFromCart);
+
+router.post('/checkout', requireVerified, checkoutCart);
 
 export default router;

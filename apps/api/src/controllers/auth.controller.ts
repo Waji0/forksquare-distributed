@@ -251,6 +251,8 @@ import {
 } from '../middlewares/auth';
 import logger from '../config/logger';
 
+import { emailService } from '../services/email';
+
 const registerSchema = z.object({
   username: z.string().min(3).max(30),
   email: z.string().email(),
@@ -279,9 +281,109 @@ function hashToken(token: string): string {
   return crypto.createHash('sha256').update(token).digest('hex');
 }
 
+/** Generate a cryptographically secure 6-digit verification code */
+function generateVerificationCode(): string {
+  return crypto.randomInt(100000, 999999).toString();
+}
+
+/** Hash a verification code before storing (never store raw codes) */
+function hashVerificationCode(code: string): string {
+  return crypto.createHash('sha256').update(code).digest('hex');
+}
+
+const VERIFICATION_CODE_TTL_MS = 10 * 60 * 1000; // 10 minutes
+
 // ==========================================
 // POST /api/auth/register
 // ==========================================
+// export async function register(req: Request, res: Response, next: NextFunction) {
+//   try {
+//     const parsed = registerSchema.safeParse(req.body);
+//     if (!parsed.success) {
+//       throw new ApiError(400, parsed.error.errors[0]?.message ?? 'Validation failed');
+//     }
+
+//     const { username, email, password, role } = parsed.data;
+
+//     // Check email uniqueness
+//     const existingUser = await pgPool.query(
+//       'SELECT id FROM users WHERE email = $1',
+//       [email]
+//     );
+//     if (existingUser.rows.length > 0) {
+//       throw new ApiError(409, 'Email already registered');
+//     }
+
+//     // Check username via Bloom Filter (O(1))
+//     const mightExist = await bloomMightContain(username);
+//     if (mightExist) {
+//       const existingUsername = await pgPool.query(
+//         'SELECT id FROM users WHERE username = $1',
+//         [username]
+//       );
+//       if (existingUsername.rows.length > 0) {
+//         throw new ApiError(409, 'Username already taken');
+//       }
+//     }
+
+//     // Hash password with bcrypt (cost factor 12)
+//     const passwordHash = await bcrypt.hash(password, 12);
+
+//     // Insert user with role
+//     const result = await pgPool.query(
+//       `INSERT INTO users (username, email, password_hash, role)
+//        VALUES ($1, $2, $3, $4)
+//        RETURNING id, username, email, role, created_at`,
+//       [username, email, passwordHash, role]
+//     );
+
+//     const user = result.rows[0];
+
+//     // Add to Bloom Filter
+//     await bloomAdd(username);
+//     await bloomAdd(email);
+
+//     // Generate token pair
+//     const accessToken = generateAccessToken({
+//       userId: user.id,
+//       email: user.email,
+//       role: user.role,
+//     });
+//     const refreshToken = generateRefreshToken({
+//       userId: user.id,
+//       email: user.email,
+//       role: user.role,
+//     });
+
+//     // Store hashed refresh token in DB
+//     const tokenHash = hashToken(refreshToken);
+//     const refreshExpiry = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
+//     await pgPool.query(
+//       `INSERT INTO refresh_tokens (user_id, token_hash, expires_at)
+//        VALUES ($1, $2, $3)`,
+//       [user.id, tokenHash, refreshExpiry]
+//     );
+
+//     logger.info(`New user registered: ${user.username} (role: ${user.role})`);
+
+//     res.status(201).json({
+//       success: true,
+//       data: {
+//         user: {
+//           id: user.id,
+//           username: user.username,
+//           email: user.email,
+//           role: user.role,
+//         },
+//         accessToken,
+//         refreshToken,
+//       },
+//     });
+//   } catch (error) {
+//     next(error);
+//   }
+// }
+
 export async function register(req: Request, res: Response, next: NextFunction) {
   try {
     const parsed = registerSchema.safeParse(req.body);
@@ -312,15 +414,19 @@ export async function register(req: Request, res: Response, next: NextFunction) 
       }
     }
 
-    // Hash password with bcrypt (cost factor 12)
     const passwordHash = await bcrypt.hash(password, 12);
 
-    // Insert user with role
+    // Generate email verification code
+    const verificationCode = generateVerificationCode();
+    const codeHash = hashVerificationCode(verificationCode);
+    const codeExpires = new Date(Date.now() + VERIFICATION_CODE_TTL_MS);
+
+    // Insert user (unverified) with hashed verification code
     const result = await pgPool.query(
-      `INSERT INTO users (username, email, password_hash, role)
-       VALUES ($1, $2, $3, $4)
-       RETURNING id, username, email, role, created_at`,
-      [username, email, passwordHash, role]
+      `INSERT INTO users (username, email, password_hash, role, is_verified, verification_code_hash, verification_code_expires)
+       VALUES ($1, $2, $3, $4, FALSE, $5, $6)
+       RETURNING id, username, email, role, is_verified, created_at`,
+      [username, email, passwordHash, role, codeHash, codeExpires]
     );
 
     const user = result.rows[0];
@@ -328,6 +434,14 @@ export async function register(req: Request, res: Response, next: NextFunction) 
     // Add to Bloom Filter
     await bloomAdd(username);
     await bloomAdd(email);
+
+    // Send verification email (real via Mailtrap, or console in dry-run mode)
+    await emailService.sendVerificationCode(email, username, verificationCode);
+
+    // In dry-run mode (no SMTP configured), log the code so it can be tested
+    if (!emailService.isReal()) {
+      logger.info(`🔑 [DEV] Verification code for ${email}: ${verificationCode}`);
+    }
 
     // Generate token pair
     const accessToken = generateAccessToken({
@@ -341,16 +455,16 @@ export async function register(req: Request, res: Response, next: NextFunction) 
       role: user.role,
     });
 
-    // Store hashed refresh token in DB
+    // Store hashed refresh token
     const tokenHash = hashToken(refreshToken);
-    const refreshExpiry = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
+    const refreshExpiry = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
     await pgPool.query(
       `INSERT INTO refresh_tokens (user_id, token_hash, expires_at)
        VALUES ($1, $2, $3)`,
       [user.id, tokenHash, refreshExpiry]
     );
 
-    logger.info(`New user registered: ${user.username} (role: ${user.role})`);
+    logger.info(`New user registered (pending verification): ${user.username}`);
 
     res.status(201).json({
       success: true,
@@ -360,9 +474,11 @@ export async function register(req: Request, res: Response, next: NextFunction) 
           username: user.username,
           email: user.email,
           role: user.role,
+          isVerified: false,
         },
         accessToken,
         refreshToken,
+        message: 'Registration successful. A 6-digit verification code has been sent to your email.',
       },
     });
   } catch (error) {
@@ -383,7 +499,7 @@ export async function login(req: Request, res: Response, next: NextFunction) {
     const { email, password } = parsed.data;
 
     const result = await pgPool.query(
-      'SELECT id, username, email, password_hash, role FROM users WHERE email = $1',
+      'SELECT id, username, email, password_hash, role, is_verified FROM users WHERE email = $1',
       [email]
     );
 
@@ -428,6 +544,7 @@ export async function login(req: Request, res: Response, next: NextFunction) {
           username: user.username,
           email: user.email,
           role: user.role,
+          isVerified: user.is_verified,
         },
         accessToken,
         refreshToken,
@@ -597,6 +714,133 @@ export async function checkUsername(req: Request, res: Response, next: NextFunct
         lookupMethod: exists ? 'bloom_then_postgres' : 'bloom_false_positive',
         responseTimeMs: elapsed,
       },
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+
+// ==========================================
+// POST /api/auth/verify-email
+// ==========================================
+const verifyEmailSchema = z.object({
+  email: z.string().email(),
+  code: z.string().regex(/^\d{6}$/, 'Code must be 6 digits'),
+});
+
+export async function verifyEmail(req: Request, res: Response, next: NextFunction) {
+  try {
+    const parsed = verifyEmailSchema.safeParse(req.body);
+    if (!parsed.success) {
+      throw new ApiError(400, parsed.error.errors[0]?.message ?? 'Validation failed');
+    }
+
+    const { email, code } = parsed.data;
+
+    const result = await pgPool.query(
+      `SELECT id, username, is_verified, verification_code_hash, verification_code_expires
+       FROM users WHERE email = $1`,
+      [email]
+    );
+
+    if (result.rows.length === 0) {
+      throw new ApiError(404, 'No account found with this email');
+    }
+
+    const user = result.rows[0];
+
+    if (user.is_verified) {
+      res.json({
+        success: true,
+        data: { alreadyVerified: true },
+        message: 'Email is already verified. You can log in.',
+      });
+      return;
+    }
+
+    if (!user.verification_code_hash || !user.verification_code_expires) {
+      throw new ApiError(400, 'No verification code issued. Please request a new one.');
+    }
+
+    if (new Date(user.verification_code_expires) < new Date()) {
+      throw new ApiError(400, 'Verification code has expired. Please request a new one.');
+    }
+
+    if (user.verification_code_hash !== hashVerificationCode(code)) {
+      throw new ApiError(400, 'Invalid verification code');
+    }
+
+    // Verify the account and clear the used code
+    await pgPool.query(
+      `UPDATE users
+       SET is_verified = TRUE, verification_code_hash = NULL, verification_code_expires = NULL
+       WHERE id = $1`,
+      [user.id]
+    );
+
+    logger.info(`Email verified for user: ${user.username}`);
+
+    res.json({
+      success: true,
+      data: { verified: true },
+      message: `Email verified successfully. Welcome to ForkSquare, ${user.username}!`,
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+// ==========================================
+// POST /api/auth/resend-verification
+// ==========================================
+const resendSchema = z.object({
+  email: z.string().email(),
+});
+
+export async function resendVerification(req: Request, res: Response, next: NextFunction) {
+  try {
+    const parsed = resendSchema.safeParse(req.body);
+    if (!parsed.success) {
+      throw new ApiError(400, 'A valid email is required');
+    }
+
+    const { email } = parsed.data;
+
+    const result = await pgPool.query(
+      'SELECT id, username, is_verified FROM users WHERE email = $1',
+      [email]
+    );
+
+    if (result.rows.length === 0) {
+      throw new ApiError(404, 'No account found with this email');
+    }
+
+    const user = result.rows[0];
+
+    if (user.is_verified) {
+      throw new ApiError(400, 'Email is already verified');
+    }
+
+    // Generate a fresh code, invalidating any previous one
+    const verificationCode = generateVerificationCode();
+    const codeHash = hashVerificationCode(verificationCode);
+    const codeExpires = new Date(Date.now() + VERIFICATION_CODE_TTL_MS);
+
+    await pgPool.query(
+      `UPDATE users SET verification_code_hash = $1, verification_code_expires = $2 WHERE id = $3`,
+      [codeHash, codeExpires, user.id]
+    );
+
+    await emailService.sendVerificationCode(email, user.username, verificationCode);
+
+    if (!emailService.isReal()) {
+      logger.info(`🔑 [DEV] New verification code for ${email}: ${verificationCode}`);
+    }
+
+    res.json({
+      success: true,
+      message: 'A new verification code has been sent to your email.',
     });
   } catch (error) {
     next(error);

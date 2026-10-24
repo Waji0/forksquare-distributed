@@ -191,6 +191,8 @@ const authLimiter = rateLimit({
 });
 app.use('/api/auth/login', authLimiter);
 app.use('/api/auth/register', authLimiter);
+app.use('/api/auth/verify-email', authLimiter);       
+app.use('/api/auth/resend-verification', authLimiter);
 
 // 8. Distributed tracing
 app.use(tracingMiddleware);

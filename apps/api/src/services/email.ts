@@ -228,6 +228,21 @@ class EmailService {
     return this.sendEmail(to, `Welcome to ForkSquare, ${username}!`, html, 'WELCOME');
   }
 
+  // Send 6-digit email verification code 
+  async sendVerificationCode(to: string, username: string, code: string): Promise<boolean> {
+    const html = `
+      <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto;">
+        <h1>Verify Your Email — ForkSquare 🍽️</h1>
+        <p>Hi <strong>${username}</strong>,</p>
+        <p>Your verification code is:</p>
+        <h2 style="font-size: 36px; letter-spacing: 10px; text-align: center; background: #f4f4f5; padding: 24px; border-radius: 12px; color: #ea580c;">${code}</h2>
+        <p>This code expires in <strong>10 minutes</strong>.</p>
+        <p>If you didn't create a ForkSquare account, you can safely ignore this email.</p>
+      </div>
+    `;
+    return this.sendEmail(to, 'Your ForkSquare Verification Code', html, 'EMAIL_VERIFICATION');
+  }
+
   async sendPasswordReset(to: string, resetToken: string): Promise<boolean> {
     const html = `
       <h1>Password Reset Request</h1>

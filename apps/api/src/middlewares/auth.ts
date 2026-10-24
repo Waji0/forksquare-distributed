@@ -72,6 +72,7 @@ import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { env } from '../config/env';
 import { ApiError } from './errorHandler';
+import { pgPool } from '../config/db';
 
 /**
  * JWT Authentication Middleware
@@ -187,4 +188,42 @@ export function generateRefreshToken(payload: {
     env.JWT_REFRESH_SECRET,
     { expiresIn: env.JWT_REFRESH_EXPIRY as any }
   );
+}
+
+/**
+ * Require the authenticated user to have a verified email.
+ *
+ * Design choice: we query the DB for verification status instead of
+ * embedding it in the JWT. This avoids stale claims — if an admin
+ * un-verifies a user, the change takes effect immediately without
+ * waiting for token expiry. (Consistency over performance.)
+ */
+export async function requireVerified(
+  req: AuthenticatedRequest,
+  _res: Response,
+  next: NextFunction
+): Promise<void> {
+  try {
+    const user = req.user;
+    if (!user) {
+      throw new ApiError(401, 'Authentication required.');
+    }
+
+    const result = await pgPool.query(
+      'SELECT is_verified FROM users WHERE id = $1',
+      [user.userId]
+    );
+
+    if (result.rows.length === 0) {
+      throw new ApiError(401, 'User no longer exists.');
+    }
+
+    if (!result.rows[0].is_verified) {
+      throw new ApiError(403, 'Email verification required. Please verify your email to continue.');
+    }
+
+    next();
+  } catch (error) {
+    next(error);
+  }
 }
