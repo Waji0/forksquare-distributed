@@ -90,7 +90,7 @@ import real2pcRoutes from './real2pc.routes';
 import realRaftRoutes from './realRaft.routes';
 import distributedSqlRoutes from './distributedSql.routes';
 import walRoutes from './wal.routes';
-
+import usersRoutes from './users.routes';
 
 
 
@@ -125,5 +125,6 @@ router.use('/real-2pc', real2pcRoutes);
 router.use('/real-raft', realRaftRoutes);
 router.use('/distributed-sql', distributedSqlRoutes);
 router.use('/wal', walRoutes);
+router.use('/users', usersRoutes);
 
 export default router;

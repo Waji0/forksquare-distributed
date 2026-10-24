@@ -357,5 +357,28 @@ export async function resetPassword(token: string, newPassword: string) {
   return response.data;
 }
 
+export interface UpdateProfilePayload {
+  username?: string;
+  email?: string;
+}
+
+export interface UpdateProfileResponse {
+  success: boolean;
+  data: {
+    user: {
+      id: number;
+      username: string;
+      email: string;
+      role: string;
+      isVerified: boolean;
+    };
+    message: string;
+  };
+}
+
+export async function updateProfile(payload: UpdateProfilePayload): Promise<UpdateProfileResponse> {
+  const response = await api.put<UpdateProfileResponse>('/users/profile', payload);
+  return response.data;
+}
 
 export default api;
