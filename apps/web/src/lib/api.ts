@@ -422,4 +422,36 @@ export async function createRestaurant(
 }
 
 
+export interface MenuItem {
+  _id: string;
+  name: string;
+  description: string;
+  price: number;
+  category: string;
+  imageUrl?: string;
+  restaurantId: string;
+  isAvailable: boolean;
+}
+
+export async function getMenuItems(restaurantId: string) {
+  const response = await api.get<{ success: boolean; data: MenuItem[] }>(`/menu/${restaurantId}`);
+  return response.data.data;
+}
+
+export async function createMenuItem(restaurantId: string, payload: FormData) {
+  const response = await api.post<{ success: boolean; data: MenuItem }>(`/menu/${restaurantId}`, payload);
+  return response.data;
+}
+
+export async function updateMenuItem(restaurantId: string, menuId: string, payload: FormData) {
+  const response = await api.put<{ success: boolean; data: MenuItem }>(`/menu/${restaurantId}/${menuId}`, payload);
+  return response.data;
+}
+
+export async function deleteMenuItem(restaurantId: string, menuId: string) {
+  const response = await api.delete<{ success: boolean }>(`/menu/${restaurantId}/${menuId}`);
+  return response.data;
+}
+
+
 export default api;

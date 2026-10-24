@@ -26,6 +26,7 @@ import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
 import ProfilePage from './pages/ProfilePage';
 import CreateRestaurantPage from './pages/CreateRestaurantPage';
+import RestaurantMenuPage from './pages/RestaurantMenuPage';
 
 
 export default function App() {
@@ -55,6 +56,7 @@ export default function App() {
         <Route path="/reset" element={<ResetPasswordPage />} />
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/create-restaurant" element={<CreateRestaurantPage />} />
+        <Route path="/restaurants/:id/menu" element={<RestaurantMenuPage />} />
       </Route>
     </Routes>
   );

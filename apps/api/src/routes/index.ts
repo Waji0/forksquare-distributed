@@ -92,6 +92,7 @@ import distributedSqlRoutes from './distributedSql.routes';
 import walRoutes from './wal.routes';
 import usersRoutes from './users.routes';
 import restaurantsRoutes from './restaurants.routes';
+import menuRoutes from './menu.routes';
 
 
 const router = Router();
@@ -127,5 +128,8 @@ router.use('/distributed-sql', distributedSqlRoutes);
 router.use('/wal', walRoutes);
 router.use('/users', usersRoutes);
 router.use('/restaurants', restaurantsRoutes);
+router.use('/menu', menuRoutes);
+
+
 
 export default router;
