@@ -381,4 +381,45 @@ export async function updateProfile(payload: UpdateProfilePayload): Promise<Upda
   return response.data;
 }
 
+
+export interface CreateRestaurantPayload {
+  name: string;
+  cuisine: string;
+  category: string;
+  rating?: number;
+  deliveryTime: string;
+  deliveryFee: string;
+  tags?: string;
+  emoji?: string;
+  gradient?: string;
+  featured?: boolean;
+}
+
+export interface CreateRestaurantResponse {
+  success: boolean;
+  data: Restaurant;
+  message: string;
+}
+
+// export async function createRestaurant(
+//   payload: FormData
+// ): Promise<CreateRestaurantResponse> {
+//   const response = await api.post<CreateRestaurantResponse>('/restaurants', payload, {
+//     headers: {
+//       'Content-Type': 'multipart/form-data',
+//     },
+//   });
+//   return response.data;
+// }
+
+export async function createRestaurant(
+  payload: FormData
+): Promise<CreateRestaurantResponse> {
+  // Axios automatically sets the correct 'multipart/form-data; boundary=...' 
+  // when you pass a FormData object. Do not override it manually!
+  const response = await api.post<CreateRestaurantResponse>('/restaurants', payload);
+  return response.data;
+}
+
+
 export default api;

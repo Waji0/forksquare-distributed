@@ -100,39 +100,91 @@ export interface AuthenticatedRequest extends Request {
 /**
  * Require a valid access token. Blocks the request if missing/invalid.
  */
-export function authenticateToken(
-  req: AuthenticatedRequest,
-  _res: Response,
-  next: NextFunction
-): void {
+// export function authenticateToken(
+//   req: AuthenticatedRequest,
+//   _res: Response,
+//   next: NextFunction
+// ): void {
+//   const authHeader = req.headers['authorization'];
+
+//   if (!authHeader || !authHeader.startsWith('Bearer ')) {
+//     throw new ApiError(401, 'Authentication required. Provide a Bearer token.');
+//   }
+
+//   const token = authHeader.split(' ')[1];
+
+//   try {
+//     const decoded = jwt.verify(token, env.JWT_SECRET) as JwtPayload;
+
+//     // Ensure this is an access token, not a refresh token
+//     if (decoded.type && decoded.type !== 'access') {
+//       throw new ApiError(401, 'Invalid token type. Access token required.');
+//     }
+
+//     req.user = decoded;
+//     next();
+//   } catch (error) {
+//     if (error instanceof jwt.TokenExpiredError) {
+//       throw new ApiError(401, 'Token expired. Please refresh your session.');
+//     }
+//     if (error instanceof jwt.JsonWebTokenError) {
+//       throw new ApiError(403, 'Invalid authentication token.');
+//     }
+//     throw error;
+//   }
+// }
+
+
+
+
+// export const authenticateToken = (req: Request, _res: Response, next: NextFunction) => {
+//   console.log('🔍 [DEBUG] authenticateToken middleware CALLED!');
+  
+//   const authHeader = req.headers['authorization'];
+//   console.log('🔍 [DEBUG] Raw Auth Header:', authHeader);
+
+//   const token = authHeader && authHeader.split(' ')[1];
+//   console.log('🔍 [DEBUG] Extracted Token:', token ? `${token.substring(0, 20)}...` : 'NONE');
+
+//   if (!token) {
+//     console.log('❌ [DEBUG] No token found, rejecting.');
+//     return next(new ApiError(401, 'No token provided in headers.'));
+//   }
+
+//   try {
+//     const decoded = jwt.verify(token, env.JWT_SECRET) as { userId: number; email: string; role: string };
+//     console.log('✅ [DEBUG] Token verified. Decoded:', decoded);
+    
+//     (req as any).user = decoded;
+//     console.log('✅ [DEBUG] req.user set successfully.');
+    
+//     next();
+//   } catch (error: any) {
+//     console.error('❌ [DEBUG] JWT Verification Failed:', error.message);
+//     return next(new ApiError(401, `Invalid or expired token: ${error.message}`));
+//   }
+// };
+
+
+
+
+export const authenticateToken = (req: Request, _res: Response, next: NextFunction) => {
   const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
 
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    throw new ApiError(401, 'Authentication required. Provide a Bearer token.');
+  if (!token) {
+    return next(new ApiError(401, 'No token provided in headers.'));
   }
-
-  const token = authHeader.split(' ')[1];
 
   try {
-    const decoded = jwt.verify(token, env.JWT_SECRET) as JwtPayload;
-
-    // Ensure this is an access token, not a refresh token
-    if (decoded.type && decoded.type !== 'access') {
-      throw new ApiError(401, 'Invalid token type. Access token required.');
-    }
-
-    req.user = decoded;
+    const decoded = jwt.verify(token, env.JWT_SECRET) as { userId: number; email: string; role: string };
+    (req as any).user = decoded;
     next();
-  } catch (error) {
-    if (error instanceof jwt.TokenExpiredError) {
-      throw new ApiError(401, 'Token expired. Please refresh your session.');
-    }
-    if (error instanceof jwt.JsonWebTokenError) {
-      throw new ApiError(403, 'Invalid authentication token.');
-    }
-    throw error;
+  } catch (error: any) {
+    return next(new ApiError(401, `Invalid or expired token: ${error.message}`));
   }
-}
+};
+
 
 /**
  * Optional authentication. Does not block, but attaches user if token is valid.

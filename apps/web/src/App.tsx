@@ -25,6 +25,7 @@ import VerifyEmailPage from './pages/VerifyEmailPage';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
 import ProfilePage from './pages/ProfilePage';
+import CreateRestaurantPage from './pages/CreateRestaurantPage';
 
 
 export default function App() {
@@ -53,6 +54,7 @@ export default function App() {
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/reset" element={<ResetPasswordPage />} />
         <Route path="/profile" element={<ProfilePage />} />
+        <Route path="/create-restaurant" element={<CreateRestaurantPage />} />
       </Route>
     </Routes>
   );
